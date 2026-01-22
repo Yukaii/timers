@@ -22,6 +22,11 @@ export function ScrollPicker({
   const scrollRef = useRef<HTMLDivElement>(null)
   const isInternalChange = useRef(false)
   const timeoutRef = useRef<NodeJS.Timeout | null>(null)
+  
+  // Create a large repeated list to simulate infinity
+  const REPETITIONS = 100
+  const totalItems = items.length * REPETITIONS
+  const centerOffset = Math.floor(REPETITIONS / 2) * items.length
 
   // Sync scroll position with value
   useEffect(() => {
@@ -31,28 +36,33 @@ export function ScrollPicker({
       return
     }
 
-    const targetScroll = value * itemHeight
-    if (Math.abs(container.scrollTop - targetScroll) > 1) {
-      container.scrollTo({ top: targetScroll, behavior: "smooth" })
-    }
-  }, [value, itemHeight])
+    const targetIndex = centerOffset + value
+    const targetScroll = targetIndex * itemHeight
+    container.scrollTop = targetScroll
+  }, [value, itemHeight, centerOffset])
 
   const handleScroll = useCallback(() => {
     const container = scrollRef.current
     if (!container) return
 
     const scrollTop = container.scrollTop
-    const index = Math.round(scrollTop / itemHeight)
+    const rawIndex = Math.round(scrollTop / itemHeight)
+    const actualIndex = rawIndex % items.length
     
-    if (index >= 0 && index < items.length && index !== value) {
+    // Handle negative modulo if it happens
+    const normalizedIndex = (actualIndex + items.length) % items.length
+
+    if (normalizedIndex !== value) {
       if (timeoutRef.current) clearTimeout(timeoutRef.current)
       
       timeoutRef.current = setTimeout(() => {
         isInternalChange.current = true
-        onChange(index)
+        onChange(normalizedIndex)
       }, 50)
     }
   }, [items.length, itemHeight, onChange, value])
+
+  const displayItems = Array.from({ length: totalItems }, (_, i) => items[i % items.length])
 
   return (
     <div 
@@ -89,21 +99,26 @@ export function ScrollPicker({
           paddingBottom: `${(height - itemHeight) / 2}px`
         }}
       >
-        {items.map((item) => (
-          <div
-            key={item}
-            className={`flex items-center justify-center snap-center transition-all duration-200 tabular-nums ${
-              value === items.indexOf(item) 
-                ? "text-6xl sm:text-7xl font-light text-foreground" 
-                : "text-3xl sm:text-4xl text-muted-foreground/40 font-extralight"
-            }`}
-            style={{ 
-              height: `${itemHeight}px`,
-            }}
-          >
-            {item}
-          </div>
-        ))}
+        {displayItems.map((item, i) => {
+          const isSelected = (i % items.length) === value && 
+                            Math.abs(i - (scrollRef.current ? Math.round(scrollRef.current.scrollTop / itemHeight) : (centerOffset + value))) < items.length;
+          
+          return (
+            <div
+              key={`${i}-${item}`}
+              className={`flex items-center justify-center snap-center transition-all duration-200 tabular-nums ${
+                isSelected
+                  ? "text-6xl sm:text-7xl font-light text-foreground" 
+                  : "text-3xl sm:text-4xl text-muted-foreground/40 font-extralight"
+              }`}
+              style={{ 
+                height: `${itemHeight}px`,
+              }}
+            >
+              {item}
+            </div>
+          )
+        })}
       </div>
     </div>
   )
