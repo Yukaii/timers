@@ -1,6 +1,7 @@
 "use client"
 
-import { useState, useCallback, useEffect } from "react"
+import { useState, useCallback, useEffect, useMemo } from "react"
+import { useParams, useRouter } from "next/navigation"
 import { TimerDisplay } from "@/components/timer-display"
 import { ModeSelector } from "@/components/mode-selector"
 import { CountdownPresets } from "@/components/countdown-presets"
@@ -13,7 +14,14 @@ type Mode = "stopwatch" | "clock" | "countdown" | "alarm"
 const MODES: Mode[] = ["clock", "stopwatch", "countdown", "alarm"]
 
 export default function PresentationTimer() {
-  const [mode, setMode] = useState<Mode>("clock")
+  const params = useParams()
+  const router = useRouter()
+  
+  const mode = useMemo(() => {
+    const m = Array.isArray(params?.mode) ? params.mode[0] : params?.mode
+    return (MODES.includes(m as Mode) ? m : "clock") as Mode
+  }, [params?.mode])
+
   const [isRunning, setIsRunning] = useState(false)
   const [countdownSeconds, setCountdownSeconds] = useState(5 * 60) // 5 minutes default
   const [alarmHour, setAlarmHour] = useState(() => {
@@ -25,10 +33,10 @@ export default function PresentationTimer() {
   const [isGPressed, setIsGPressed] = useState(false)
 
   const handleModeChange = useCallback((newMode: Mode) => {
-    setMode(newMode)
+    router.push(`/${newMode}`)
     setIsRunning(false)
     setShowConfetti(false)
-  }, [])
+  }, [router])
 
   const handleToggle = useCallback(() => {
     setIsRunning((prev) => !prev)
