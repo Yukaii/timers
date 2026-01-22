@@ -6,6 +6,7 @@ import { useState, useEffect, useCallback, useRef } from "react"
 import { AnalogClock } from "@/components/analog-clock"
 import { Button } from "@/components/ui/button"
 import { RotateCcw } from "lucide-react"
+import { TimePickerWheel } from "./time-picker-wheel"
 
 type Mode = "stopwatch" | "clock" | "countdown" | "alarm"
 
@@ -283,6 +284,21 @@ export function TimerDisplay({
         >
           <AnalogClock date={currentTime} />
         </div>
+      </div>
+    )
+  }
+
+  if (mode === "alarm" && !isRunning) {
+    return (
+      <div className={`flex flex-col items-center justify-center gap-8 py-12 ${colorClass}`}>
+        <TimePickerWheel
+          hour={alarmHour}
+          minute={alarmMinute}
+          onHourChange={(h) => onAlarmChange?.(h, alarmMinute)}
+          onMinuteChange={(m) => onAlarmChange?.(alarmHour, m)}
+          disabled={isRunning}
+        />
+        <span className="text-xl font-light text-muted-foreground tracking-widest uppercase">Set Alarm</span>
       </div>
     )
   }

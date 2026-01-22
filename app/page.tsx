@@ -4,7 +4,6 @@ import { useState, useCallback, useEffect } from "react"
 import { TimerDisplay } from "@/components/timer-display"
 import { ModeSelector } from "@/components/mode-selector"
 import { CountdownPresets } from "@/components/countdown-presets"
-import { AlarmSetter } from "@/components/alarm-setter"
 import { TimerControls } from "@/components/timer-controls"
 import { Confetti } from "@/components/confetti"
 import { ThemeToggle } from "@/components/theme-toggle"
@@ -120,12 +119,12 @@ export default function PresentationTimer() {
       <Confetti show={showConfetti} />
       
       {/* Mode Selector */}
-      <div className="absolute top-4 sm:top-8 left-1/2 -translate-x-1/2">
+      <div className="absolute top-4 sm:top-8 left-1/2 -translate-x-1/2 z-50">
         <ModeSelector mode={mode} onChange={handleModeChange} showShortcutHints={isGPressed} />
       </div>
 
       {/* Theme Toggle */}
-      <div className="absolute top-4 sm:top-8 right-4 sm:right-8">
+      <div className="absolute top-4 sm:top-8 right-4 sm:right-8 z-50">
         <ThemeToggle />
       </div>
 
@@ -149,17 +148,6 @@ export default function PresentationTimer() {
         {mode === "countdown" && !isRunning && (
           <CountdownPresets
             onSelect={(minutes) => setCountdownSeconds(minutes * 60)}
-          />
-        )}
-
-        {/* Alarm Setter */}
-        {mode === "alarm" && (
-          <AlarmSetter
-            hour={alarmHour}
-            minute={alarmMinute}
-            onHourChange={setAlarmHour}
-            onMinuteChange={setAlarmMinute}
-            disabled={isRunning}
           />
         )}
 
