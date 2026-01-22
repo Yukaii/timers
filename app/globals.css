@@ -139,6 +139,11 @@
   animation: confetti-fall linear forwards;
 }
 
+@keyframes explicit-bounce {
+  0%, 100% { transform: translateY(-12px); opacity: 0.2; }
+  50% { transform: translateY(12px); opacity: 0.8; }
+}
+
 @layer utilities {
   .no-scrollbar::-webkit-scrollbar {
     display: none;
@@ -147,4 +152,10 @@
     -ms-overflow-style: none;
     scrollbar-width: none;
   }
+}
+
+@theme inline {
+  --animate-pulse-subtle: pulse-subtle 3s ease-in-out infinite;
+  --animate-bounce-slow: bounce-slow 2s ease-in-out infinite;
+  --animate-explicit-bounce: explicit-bounce 2s ease-in-out infinite;
 }

@@ -1,6 +1,7 @@
 "use client"
 
 import React, { useRef, useEffect, useCallback } from "react"
+import { ChevronDown, ChevronUp } from "lucide-react"
 
 interface ScrollPickerProps {
   items: string[]
@@ -66,9 +67,15 @@ export function ScrollPicker({
 
   return (
     <div 
-      className={`relative overflow-hidden select-none ${disabled ? "opacity-50 pointer-events-none" : ""}`}
+      className={`relative overflow-hidden select-none group ${disabled ? "opacity-50 pointer-events-none" : ""}`}
       style={{ height: `${height}px`, width: "clamp(120px, 20vw, 200px)" }}
     >
+      {/* Idle Hint Animation - Large explicit arrows indicating scrollability */}
+      <div className="absolute left-0 inset-y-0 flex flex-col items-center justify-between py-8 pointer-events-none z-20 transition-all duration-500 group-hover:opacity-0 group-hover:translate-x-[-20px]">
+        <ChevronUp className="w-8 h-8 text-foreground animate-explicit-bounce" style={{ animationDelay: '0s' }} />
+        <ChevronDown className="w-8 h-8 text-foreground animate-explicit-bounce" style={{ animationDelay: '-1s' }} />
+      </div>
+
       {/* Selection Highlight Area */}
       <div 
         className="absolute inset-x-0 border-y border-border/20 bg-muted/5 pointer-events-none z-10"
