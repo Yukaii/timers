@@ -33,7 +33,7 @@ export function AnalogClock({ date }: AnalogClockProps) {
     
     const centerX = width / 2
     const centerY = height / 2
-    const radius = Math.min(width, height) / 2 - 4
+    const radius = Math.min(width, height) / 2 - 10
 
     // Clear canvas
     ctx.clearRect(0, 0, width, height)
@@ -52,14 +52,14 @@ export function AnalogClock({ date }: AnalogClockProps) {
       
       ctx.beginPath()
       if (isHour) {
-        ctx.lineWidth = 2
+        ctx.lineWidth = Math.max(2, radius * 0.015)
         ctx.strokeStyle = "currentColor"
-        ctx.moveTo(0, -radius + 12)
+        ctx.moveTo(0, -radius + (radius * 0.08))
         ctx.lineTo(0, -radius)
       } else {
-        ctx.lineWidth = 1
+        ctx.lineWidth = Math.max(1, radius * 0.005)
         ctx.strokeStyle = "rgba(128, 128, 128, 0.5)"
-        ctx.moveTo(0, -radius + 5)
+        ctx.moveTo(0, -radius + (radius * 0.04))
         ctx.lineTo(0, -radius)
       }
       ctx.stroke()
@@ -80,7 +80,7 @@ export function AnalogClock({ date }: AnalogClockProps) {
     ctx.save()
     ctx.translate(centerX, centerY)
     ctx.rotate(hourAngle)
-    ctx.lineWidth = 4
+    ctx.lineWidth = Math.max(4, radius * 0.03)
     ctx.beginPath()
     ctx.moveTo(0, 10)
     ctx.lineTo(0, -radius * 0.5)
@@ -91,7 +91,7 @@ export function AnalogClock({ date }: AnalogClockProps) {
     ctx.save()
     ctx.translate(centerX, centerY)
     ctx.rotate(minuteAngle)
-    ctx.lineWidth = 3
+    ctx.lineWidth = Math.max(3, radius * 0.02)
     ctx.beginPath()
     ctx.moveTo(0, 10)
     ctx.lineTo(0, -radius * 0.7)
@@ -102,14 +102,14 @@ export function AnalogClock({ date }: AnalogClockProps) {
     ctx.save()
     ctx.translate(centerX, centerY)
     ctx.rotate(secondAngle)
-    ctx.lineWidth = 1.5
+    ctx.lineWidth = Math.max(1.5, radius * 0.01)
     ctx.beginPath()
     ctx.moveTo(0, 15)
     ctx.lineTo(0, -radius * 0.85)
     ctx.stroke()
     // Center dot
     ctx.beginPath()
-    ctx.arc(0, 0, 4, 0, Math.PI * 2)
+    ctx.arc(0, 0, Math.max(4, radius * 0.02), 0, Math.PI * 2)
     ctx.fill()
     ctx.restore()
 
@@ -120,10 +120,11 @@ export function AnalogClock({ date }: AnalogClockProps) {
       ref={canvasRef}
       className="text-foreground"
       style={{ 
-        width: "min(85vw, 75vh)", 
-        height: "min(85vw, 75vh)",
+        width: "min(85vw, 65vh)", 
+        height: "min(85vw, 65vh)",
         maxWidth: "800px",
-        maxHeight: "800px"
+        maxHeight: "800px",
+        marginTop: "2rem"
       }}
     />
   )
