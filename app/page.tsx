@@ -11,6 +11,8 @@ import { ThemeToggle } from "@/components/theme-toggle"
 
 type Mode = "stopwatch" | "clock" | "countdown" | "alarm"
 
+const MODES: Mode[] = ["clock", "stopwatch", "countdown", "alarm"]
+
 export default function PresentationTimer() {
   const [mode, setMode] = useState<Mode>("clock")
   const [isRunning, setIsRunning] = useState(false)
@@ -21,12 +23,13 @@ export default function PresentationTimer() {
   })
   const [alarmMinute, setAlarmMinute] = useState(0)
   const [showConfetti, setShowConfetti] = useState(false)
+  const [isGPressed, setIsGPressed] = useState(false)
 
-  const handleModeChange = (newMode: Mode) => {
+  const handleModeChange = useCallback((newMode: Mode) => {
     setMode(newMode)
     setIsRunning(false)
     setShowConfetti(false)
-  }
+  }, [])
 
   const handleToggle = useCallback(() => {
     setIsRunning((prev) => !prev)
@@ -45,11 +48,58 @@ export default function PresentationTimer() {
 
   const showControls = mode === "stopwatch" || mode === "countdown" || mode === "alarm"
 
+  // Timeout for G mode
+  useEffect(() => {
+    if (isGPressed) {
+      const timeout = setTimeout(() => {
+        setIsGPressed(false)
+      }, 5000)
+      return () => clearTimeout(timeout)
+    }
+  }, [isGPressed])
+
   // Keyboard shortcuts
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       // Don't trigger if user is typing in an input
       if (e.target instanceof HTMLInputElement) return
+      
+      // Global cancel for g-mode
+      if (isGPressed && e.key === "Escape") {
+        setIsGPressed(false)
+        return
+      }
+
+      if (isGPressed) {
+        e.preventDefault()
+        setIsGPressed(false)
+
+        switch(e.key.toLowerCase()) {
+          case 't':
+          case '1':
+            handleModeChange('clock')
+            return
+          case 's':
+          case '2':
+            handleModeChange('stopwatch')
+            return
+          case 'c':
+          case '3':
+            handleModeChange('countdown')
+            return
+          case 'a':
+          case '4':
+            handleModeChange('alarm')
+            return
+        }
+        return
+      }
+
+      if (e.key.toLowerCase() === "g") {
+        e.preventDefault()
+        setIsGPressed(true)
+        return
+      }
       
       if (e.code === "Space" && showControls) {
         e.preventDefault()
@@ -63,7 +113,7 @@ export default function PresentationTimer() {
 
     window.addEventListener("keydown", handleKeyDown)
     return () => window.removeEventListener("keydown", handleKeyDown)
-  }, [showControls, handleReset, handleToggle])
+  }, [showControls, handleReset, handleToggle, handleModeChange, isGPressed])
 
   return (
     <main className="min-h-screen bg-background flex flex-col items-center justify-center p-4 sm:p-8">
@@ -71,7 +121,7 @@ export default function PresentationTimer() {
       
       {/* Mode Selector */}
       <div className="absolute top-4 sm:top-8 left-1/2 -translate-x-1/2">
-        <ModeSelector mode={mode} onChange={handleModeChange} />
+        <ModeSelector mode={mode} onChange={handleModeChange} showShortcutHints={isGPressed} />
       </div>
 
       {/* Theme Toggle */}
@@ -120,16 +170,21 @@ export default function PresentationTimer() {
       </div>
 
       {/* Keyboard shortcuts hint */}
-      {showControls && (
-        <div className="absolute bottom-4 sm:bottom-8 text-xs text-muted-foreground flex gap-4">
-          <span>
-            <kbd className="px-1.5 py-0.5 bg-secondary rounded text-secondary-foreground">Space</kbd> start/stop
-          </span>
-          <span>
-            <kbd className="px-1.5 py-0.5 bg-secondary rounded text-secondary-foreground">R</kbd> reset
-          </span>
-        </div>
-      )}
+      <div className="absolute bottom-4 sm:bottom-8 text-xs text-muted-foreground flex gap-4">
+        {showControls && (
+          <>
+            <span>
+              <kbd className="px-1.5 py-0.5 bg-secondary rounded text-secondary-foreground">Space</kbd> start/stop
+            </span>
+            <span>
+              <kbd className="px-1.5 py-0.5 bg-secondary rounded text-secondary-foreground">R</kbd> reset
+            </span>
+          </>
+        )}
+        <span>
+          <kbd className="px-1.5 py-0.5 bg-secondary rounded text-secondary-foreground">g</kbd> + <kbd className="px-1.5 py-0.5 bg-secondary rounded text-secondary-foreground">t/s/c/a</kbd> switch mode
+        </span>
+      </div>
     </main>
   )
 }
