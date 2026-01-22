@@ -95,17 +95,17 @@ export default function PresentationTimer() {
         return
       }
 
-      if (e.key.toLowerCase() === "g") {
+      if (e.key.toLowerCase() === "g" && !e.metaKey && !e.ctrlKey && !e.altKey) {
         e.preventDefault()
         setIsGPressed(true)
         return
       }
       
-      if (e.code === "Space" && showControls) {
+      if (e.code === "Space" && showControls && !e.metaKey && !e.ctrlKey && !e.altKey) {
         e.preventDefault()
         handleToggle()
       }
-      if (e.code === "KeyR" && showControls) {
+      if (e.code === "KeyR" && showControls && !e.metaKey && !e.ctrlKey && !e.altKey) {
         e.preventDefault()
         handleReset()
       }
