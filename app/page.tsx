@@ -28,9 +28,9 @@ export default function PresentationTimer() {
     setShowConfetti(false)
   }
 
-  const handleToggle = () => {
-    setIsRunning(!isRunning)
-  }
+  const handleToggle = useCallback(() => {
+    setIsRunning((prev) => !prev)
+  }, [])
 
   const handleReset = useCallback(() => {
     setIsRunning(false)
@@ -63,7 +63,7 @@ export default function PresentationTimer() {
 
     window.addEventListener("keydown", handleKeyDown)
     return () => window.removeEventListener("keydown", handleKeyDown)
-  }, [showControls, handleReset])
+  }, [showControls, handleReset, handleToggle])
 
   return (
     <main className="min-h-screen bg-background flex flex-col items-center justify-center p-4 sm:p-8">

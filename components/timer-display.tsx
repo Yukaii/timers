@@ -31,7 +31,7 @@ function formatTime(ms: number, showMs = false): { hours: string; minutes: strin
   }
 }
 
-function formatClockTime(date: Date): { hours: string; minutes: string; seconds: string } {
+function formatClockTime(date: Date): { hours: string; minutes: string; seconds: string; milliseconds?: string } {
   return {
     hours: date.getHours().toString().padStart(2, "0"),
     minutes: date.getMinutes().toString().padStart(2, "0"),
@@ -79,12 +79,12 @@ export function TimerDisplay({
   // Sync edit inputs with countdown seconds when not running
   useEffect(() => {
     if (!isRunning && mode === "countdown") {
-      const time = formatTime(countdownSeconds * 1000)
+      const time = formatTime(remaining)
       setEditHours(time.hours)
       setEditMinutes(time.minutes)
       setEditSeconds(time.seconds)
     }
-  }, [countdownSeconds, isRunning, mode])
+  }, [remaining, isRunning, mode])
 
   // Reset countdown when seconds change
   useEffect(() => {
