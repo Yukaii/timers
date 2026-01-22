@@ -137,6 +137,10 @@ export default function PresentationTimer() {
           onCountdownSecondsChange={setCountdownSeconds}
           alarmHour={alarmHour}
           alarmMinute={alarmMinute}
+          onAlarmChange={(h, m) => {
+            setAlarmHour(h)
+            setAlarmMinute(m)
+          }}
           isRunning={isRunning}
           onTimeUp={handleTimeUp}
         />

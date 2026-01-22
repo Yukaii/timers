@@ -3,6 +3,9 @@
 import React from "react"
 
 import { useState, useEffect, useCallback, useRef } from "react"
+import { AnalogClock } from "@/components/analog-clock"
+import { Button } from "@/components/ui/button"
+import { RotateCcw } from "lucide-react"
 
 type Mode = "stopwatch" | "clock" | "countdown" | "alarm"
 
@@ -12,6 +15,7 @@ interface TimerDisplayProps {
   onCountdownSecondsChange?: (seconds: number) => void
   alarmHour: number
   alarmMinute: number
+  onAlarmChange?: (hour: number, minute: number) => void
   isRunning: boolean
   onTimeUp?: () => void
 }
@@ -44,7 +48,8 @@ export function TimerDisplay({
   countdownSeconds, 
   onCountdownSecondsChange,
   alarmHour, 
-  alarmMinute, 
+  alarmMinute,
+  onAlarmChange,
   isRunning, 
   onTimeUp 
 }: TimerDisplayProps) {
@@ -53,6 +58,7 @@ export function TimerDisplay({
   const [alarmRemaining, setAlarmRemaining] = useState(0)
   const [currentTime, setCurrentTime] = useState(new Date())
   const [hasEnded, setHasEnded] = useState(false)
+  const [showAnalog, setShowAnalog] = useState(false)
   
   // Editable inputs state
   const [editHours, setEditHours] = useState("00")
@@ -76,15 +82,21 @@ export function TimerDisplay({
     return target.getTime() - now.getTime()
   }, [alarmHour, alarmMinute])
 
-  // Sync edit inputs with countdown seconds when not running
+  // Sync edit inputs
   useEffect(() => {
-    if (!isRunning && mode === "countdown") {
+    if (isRunning) return
+
+    if (mode === "countdown") {
       const time = formatTime(remaining)
       setEditHours(time.hours)
       setEditMinutes(time.minutes)
       setEditSeconds(time.seconds)
+    } else if (mode === "alarm") {
+      setEditHours(alarmHour.toString().padStart(2, "0"))
+      setEditMinutes(alarmMinute.toString().padStart(2, "0"))
+      setEditSeconds("00")
     }
-  }, [remaining, isRunning, mode])
+  }, [remaining, isRunning, mode, alarmHour, alarmMinute])
 
   // Reset countdown when seconds change
   useEffect(() => {
@@ -190,7 +202,8 @@ export function TimerDisplay({
   }
 
   const validateAndUpdate = () => {
-    const h = Math.min(99, Math.max(0, Number.parseInt(editHours, 10) || 0))
+    const maxHours = mode === "alarm" ? 23 : 99
+    const h = Math.min(maxHours, Math.max(0, Number.parseInt(editHours, 10) || 0))
     const m = Math.min(59, Math.max(0, Number.parseInt(editMinutes, 10) || 0))
     const s = Math.min(59, Math.max(0, Number.parseInt(editSeconds, 10) || 0))
     
@@ -198,8 +211,12 @@ export function TimerDisplay({
     setEditMinutes(m.toString().padStart(2, "0"))
     setEditSeconds(s.toString().padStart(2, "0"))
     
-    const totalSeconds = h * 3600 + m * 60 + s
-    onCountdownSecondsChange?.(Math.max(1, totalSeconds))
+    if (mode === "countdown") {
+      const totalSeconds = h * 3600 + m * 60 + s
+      onCountdownSecondsChange?.(Math.max(1, totalSeconds))
+    } else if (mode === "alarm") {
+      onAlarmChange?.(h, m)
+    }
   }
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -253,12 +270,31 @@ export function TimerDisplay({
 
   const time = getTimeDisplay()
   const showHours = mode === "clock" || mode === "alarm" || Number.parseInt(time.hours) > 0 || (mode === "countdown" && !isRunning)
-  const isEditable = mode === "countdown" && !isRunning
+  const isEditable = (mode === "countdown" || mode === "alarm") && !isRunning
+  const showSecondsInput = mode === "countdown"
+
+  if (mode === "clock" && showAnalog) {
+    return (
+      <div className="flex flex-col items-center gap-4 relative">
+        <div 
+          onClick={() => setShowAnalog(false)} 
+          className="cursor-pointer hover:scale-105 transition-transform"
+          title="Click to switch to digital clock"
+        >
+          <AnalogClock date={currentTime} />
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div
-      className={`font-sans font-light tracking-tight transition-colors duration-300 flex items-baseline ${colorClass}`}
+      className={`font-sans font-light tracking-tight transition-colors duration-300 flex items-baseline ${colorClass} ${
+        mode === "clock" ? "cursor-pointer hover:opacity-80" : ""
+      }`}
       style={timeStyle}
+      onClick={() => mode === "clock" && setShowAnalog(true)}
+      title={mode === "clock" ? "Click to switch to analog clock" : undefined}
     >
       {isEditable ? (
         <>
@@ -267,7 +303,7 @@ export function TimerDisplay({
             type="text"
             inputMode="numeric"
             value={editHours}
-            onChange={(e) => handleEditChange(e.target.value, setEditHours, 99, minutesRef)}
+            onChange={(e) => handleEditChange(e.target.value, setEditHours, mode === "alarm" ? 23 : 99, minutesRef)}
             onBlur={validateAndUpdate}
             onKeyDown={handleKeyDown}
             onFocus={(e) => e.target.select()}
@@ -280,26 +316,30 @@ export function TimerDisplay({
             type="text"
             inputMode="numeric"
             value={editMinutes}
-            onChange={(e) => handleEditChange(e.target.value, setEditMinutes, 59, secondsRef)}
+            onChange={(e) => handleEditChange(e.target.value, setEditMinutes, 59, showSecondsInput ? secondsRef : undefined)}
             onBlur={validateAndUpdate}
             onKeyDown={handleKeyDown}
             onFocus={(e) => e.target.select()}
             className="hover:border-muted-foreground/30 focus:border-foreground transition-colors"
             style={inputStyle}
           />
-          <span>:</span>
-          <input
-            ref={secondsRef}
-            type="text"
-            inputMode="numeric"
-            value={editSeconds}
-            onChange={(e) => handleEditChange(e.target.value, setEditSeconds, 59, undefined)}
-            onBlur={validateAndUpdate}
-            onKeyDown={handleKeyDown}
-            onFocus={(e) => e.target.select()}
-            className="hover:border-muted-foreground/30 focus:border-foreground transition-colors"
-            style={inputStyle}
-          />
+          {showSecondsInput && (
+            <>
+              <span>:</span>
+              <input
+                ref={secondsRef}
+                type="text"
+                inputMode="numeric"
+                value={editSeconds}
+                onChange={(e) => handleEditChange(e.target.value, setEditSeconds, 59, undefined)}
+                onBlur={validateAndUpdate}
+                onKeyDown={handleKeyDown}
+                onFocus={(e) => e.target.select()}
+                className="hover:border-muted-foreground/30 focus:border-foreground transition-colors"
+                style={inputStyle}
+              />
+            </>
+          )}
         </>
       ) : (
         <>
