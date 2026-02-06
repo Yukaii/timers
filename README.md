@@ -28,3 +28,29 @@ Continue building your app on:
 2. Deploy your chats from the v0 interface
 3. Changes are automatically pushed to this repository
 4. Vercel deploys the latest version from this repository
+
+## Screenshots
+
+### Time
+
+![Time mode](public/screenshots/time-mode.png)
+
+### Time (Analog)
+
+![Time mode analog](public/screenshots/time-analog-mode.png)
+
+### Time (Dark)
+
+![Time mode dark](public/screenshots/time-mode-dark.png)
+
+### Stopwatch
+
+![Stopwatch mode](public/screenshots/stopwatch-mode.png)
+
+### Countdown
+
+![Countdown mode](public/screenshots/countdown-mode.png)
+
+### Alarm
+
+![Alarm mode](public/screenshots/alarm-mode.png)
